@@ -1,14 +1,3 @@
-# MD
-A candidate mention detection system for the pipeline
+# Migration Notice
 
-## Install and run
-
-- Clone the project
-- cd into the project path
-- `wget http://ddns.meiguo.work/public/MD.zip`
-- (Alternatively on Mac OSX: `curl -O http://ddns.meiguo.work/public/MD.zip`)
-- `unzip MD.zip`
-- `mvn lbjava:generate`
-- `mvn clean`
-- `mvn install`
-- `mvn exec:java -Dexec.mainClass="org.cogcomp.md.BIOTester"`
+This project has been moved to and continue developed at https://github.com/Slash0BZ/illinois-cogcomp-nlp/tree/md-pipeline

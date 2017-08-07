@@ -23,7 +23,9 @@ import java.io.File;
 import java.util.Vector;
 
 /**
- * Created by admin on 8/3/2017.
+ * This class gives a given TextAnnotation a new View "MENTION"
+ * The View contains Constituents that are annotated mentions of the given TextAnnotation
+ * The annotator requires POS View to work.
  */
 public class MentionAnnotator extends Annotator{
 
@@ -32,6 +34,7 @@ public class MentionAnnotator extends Annotator{
     private bio_classifier_nam classifier_nam;
     private bio_classifier_nom classifier_nom;
     private bio_classifier_pro classifier_pro;
+    private extent_classifier classifier_extent;
     private Learner[] candidates;
     private FlatGazetteers gazetteers;
     private BrownClusters brownClusters;
@@ -46,6 +49,7 @@ public class MentionAnnotator extends Annotator{
         classifier_nam = new bio_classifier_nam("models/ACE_NAM.lc", "models/ACE_NAM.lex");
         classifier_nom = new bio_classifier_nom("models/ACE_NOM.lc", "models/ACE_NOM.lex");
         classifier_pro = new bio_classifier_pro("models/ACE_PRO.lc", "models/ACE_PRO.lex");
+        classifier_extent = new extent_classifier("models/EXTENT_ACE.lc", "models/EXTENT_ACE.lex");
 
         try {
             Datastore ds = new Datastore(new ResourceConfigurator().getDefaultConfig());
@@ -107,10 +111,10 @@ public class MentionAnnotator extends Annotator{
         String preBIOLevel1 = "";
         String preBIOLevel2 = "";
         for (int i = bioView.getStartSpan(); i < bioView.getEndSpan(); i++){
-            Constituent currentBIO = tokenView.getConstituentsCoveringToken(i).get(0);
+            Constituent currentBIO = bioView.getConstituentsCoveringToken(i).get(0);
             currentBIO.addAttribute("preBIOLevel1", preBIOLevel1);
             currentBIO.addAttribute("preBIOLevel2", preBIOLevel2);
-            Pair<String, Integer> prediction = BIOTester.joint_inference(currentBIO, candidates, null);
+            Pair<String, Integer> prediction = BIOTester.joint_inference(currentBIO, candidates);
             String predictedTag = prediction.getFirst();
             preBIOLevel2 = preBIOLevel1;
             preBIOLevel1 = predictedTag;
@@ -126,7 +130,8 @@ public class MentionAnnotator extends Annotator{
                 if (canIdx == 2){
                     mention.addAttribute("EntityMentionType", "PRO");
                 }
-                mentionView.addConstituent(mention);
+                Constituent fullMention = ExtentTester.getFullMention(classifier_extent, mention, gazetteers, brownClusters, wordNet);
+                mentionView.addConstituent(fullMention);
             }
         }
         ta.addView("MENTION", mentionView);
